@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>내 링크 모음</title>
+<style>
+  body { font-family: sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
+  ul { list-style: none; padding: 0; }
+  li { display: flex; align-items: center; gap: .5rem; padding: .5rem 0; border-bottom: 1px solid #ddd; }
+  li a { flex: 1; font-size: 1.1rem; }
+  form { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: 1.5rem; }
+  input { padding: .4rem; flex: 1 1 140px; }
+  button { padding: .4rem .8rem; cursor: pointer; }
+</style>
+</head>
+<body>
+<h1>내 링크 모음</h1>
+<ul id="list"></ul>
+
+<form id="form">
+  <input id="name" placeholder="이름" required>
+  <input id="url" placeholder="주소 (https://...)" required>
+  <button>추가</button>
+</form>
+
+<script>
+const KEY = 'my-links';
+const DEFAULTS = [
+  { name: 'Consulting', url: 'https://loony-husbnd.github.io/Consulting' },
+  { name: 'PSA', url: 'https://loony-husbnd.github.io/Pokemon-Seal-Archive' },
+  { name: '뮤즈페이지', url: 'https://www.muse.page/markovspace' }
+];
+
+function load() {
+  try { const s = JSON.parse(localStorage.getItem(KEY)); if (Array.isArray(s)) return s; } catch (e) {}
+  return DEFAULTS.slice();
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(links)); } catch (e) {} }
+
+let links = load();
+
+function render() {
+  const ul = document.getElementById('list');
+  ul.innerHTML = '';
+  links.forEach((l, i) => {
+    const li = document.createElement('li');
+    const a = document.createElement('a');
+    a.href = l.url; a.textContent = l.name; a.target = '_blank'; a.rel = 'noopener';
+    const del = document.createElement('button');
+    del.textContent = '삭제';
+    del.onclick = () => { links.splice(i, 1); save(); render(); };
+    li.append(a, del);
+    ul.append(li);
+  });
+}
+
+document.getElementById('form').onsubmit = e => {
+  e.preventDefault();
+  let url = document.getElementById('url').value.trim();
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  links.push({ name: document.getElementById('name').value.trim(), url });
+  save(); render(); e.target.reset();
+};
+
+render();
+</script>
+</body>
+</html>
